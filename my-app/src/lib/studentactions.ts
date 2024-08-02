@@ -3,7 +3,6 @@
 import connectDB from "../../lib/db";
 import ProfileModel from "../../lib/studentmodel/student";
 export async function createProfile(formData: {
-
 }) {
   try {
     await connectDB();
@@ -16,11 +15,11 @@ export async function createProfile(formData: {
   }
 }
 
-
+// Fetch all non-deleted students
 export async function getAllStudents() {
   try {
     await connectDB();
-    const profiles = await ProfileModel.find();
+    const profiles = await ProfileModel.find({ deleted: false }); // Only fetch non-deleted students
     return { success: true, data: profiles };
   } catch (error) {
     console.error("Error fetching profiles:", error);
@@ -28,8 +27,12 @@ export async function getAllStudents() {
   }
 }
 
-
+// Update a student's profile
 export async function updateProfile(profileId: string, updatedData: Partial<{
+  studentname: string;
+  initial: string;
+  age: string;
+  email: string;
 }>) {
   try {
     await connectDB();
@@ -45,15 +48,16 @@ export async function updateProfile(profileId: string, updatedData: Partial<{
   }
 }
 
-// Delete a profile by ID
-export async function deleteProfile(profileId: string) {
+// Soft delete a student profile
+export async function softDeleteProfile(profileId: string) {
   try {
     await connectDB();
-    const deletedProfile = await ProfileModel.findByIdAndDelete(profileId);
-    if (!deletedProfile) {
+    const profile = await ProfileModel.findById(profileId);
+    if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, data: deletedProfile };
+    await profile.softDelete();
+    return { success: true, data: profile };
   } catch (error) {
     console.error('Error deleting profile:', error);
     return { success: false, error: 'Internal Server Error' };

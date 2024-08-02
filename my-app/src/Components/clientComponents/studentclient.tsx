@@ -23,13 +23,13 @@ const formSchema = z.object({
   studentname: z.string().min(2, {
     message: "Student name must be at least 2 characters.",
   }),
-  intial: z.string().min(1, {
+  initial: z.string().min(1, {
     message: "Student name must be at least 2 characters.",
   }),
   age: z.string().min(1, {
     message: "Age must be at least 1 character.",
   }),
-  email: z.enum(['m@example.com', 'm@google.com', 'm@support.com'], {
+  email: z.string().min(1, {
     message: "Invalid email address",
   }),
 });
@@ -45,11 +45,9 @@ export default function ProfileForm() {
   });
 
   const { handleSubmit, reset, formState: { errors } } = form;
-
   const onSubmit = async (data: FormValues) => {
     try {
       const result = await createProfile(data);
-
       if (result.created) {
         setSubmittedData(data); 
         redirect("/allData");
@@ -61,7 +59,6 @@ export default function ProfileForm() {
       console.error('Form submission error:', error);
     }
   };
-
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="w-[450px] m-auto max-w-md bg-white p-8 rounded-lg shadow-lg">
@@ -90,7 +87,7 @@ export default function ProfileForm() {
             />
             <FormField
               control={form.control}
-              name="intial"
+              name="initial"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Student Intial</FormLabel>
@@ -98,13 +95,13 @@ export default function ProfileForm() {
                     <Input
                       placeholder="Enter your initial"
                       {...field}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.intial ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.initial ? 'border-red-500' : 'border-gray-300'}`}
                     />
                   </FormControl>
                   {/* <FormDescription>
                     This is your display name.
                   </FormDescription> */}
-                  <FormMessage>{errors.intial?.message}</FormMessage>
+                  <FormMessage>{errors.initial?.message}</FormMessage>
                 </FormItem>
               )}
             />
