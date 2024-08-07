@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-
 interface Profile extends Document {
   studentname: string;
   initial: string;
@@ -24,5 +23,4 @@ ProfileSchema.methods.softDelete = async function () {
 };
 
 const ProfileModel = mongoose.models.Profile || mongoose.model<Profile>('Profile', ProfileSchema);
-
 export default ProfileModel;
