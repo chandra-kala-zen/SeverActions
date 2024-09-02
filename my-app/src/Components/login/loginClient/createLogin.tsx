@@ -1,103 +1,105 @@
 "use client";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormField, FormControl, FormLabel, FormMessage, FormItem } from "@/components/ui/form";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginUser } from "@/lib/login";
-import { useRouter } from 'next/navigation';
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-function LoginPage() {
+const Login = () => {
   const router = useRouter();
+  const [error, setError] = useState("");
+  // const session = useSession();
+  const { data: session, status: sessionStatus } = useSession();
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    mode: "onBlur",
-  });
+  useEffect(() => {
+    if (sessionStatus === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [sessionStatus, router]);
 
-  const { handleSubmit, formState: { errors } } = form;
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    return emailRegex.test(email);
+  };
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      const response = await loginUser(data);
-      if (response.authenticated && response.success) {
-        console.log("User logged in successfully");
-        router.push('/dashboard'); // Redirect to dashboard after successful login
-      } else {
-        console.error("Login failed:", response.error);
-      }
-    } catch (error) {
-      console.error("An error occurred during login:", error);
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+
+    if (!isValidEmail(email)) {
+      setError("Email is invalid");
+      return;
+    }
+
+    if (!password || password.length < 8) {
+      setError("Password is invalid");
+      return;
+    }
+
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (res?.error) {
+      setError("Invalid email or password");
+      if (res?.url) router.replace("/dashboard");
+    } else {
+      setError("");
     }
   };
 
-  return (
-    <div className="shadow-custom-dark p-5 bg-blue-50 mt-3 gap-4 flex flex-col items-between rounded-[50px] w-[500px] m-auto">
-      <div className="items-center text-center m-auto">
-        <img src="ama.jpeg" alt="amazon" className="w-[50px] h-[50px] rounded-[50%] m-auto" />
-        <h1 className="font-bold">✨✨ Welcome to Login</h1>
-      </div>
-      <Form {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <FormField
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="email">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter Your Email"
-                    {...field}
-                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                </FormControl>
-                <FormMessage>{errors.email?.message}</FormMessage>
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="password">Password</FormLabel>
-                <FormControl>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter Your Password"
-                    {...field}
-                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                </FormControl>
-                <FormMessage>{errors.password?.message}</FormMessage>
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="font-bold">
-            Login
-          </Button>
-        </form>
-      </Form>
-      <h1 className="text-right mt-4">
-        Don't have an account?{" "}
-        <Link className="text-blue-400" href="/signupClient">
-          Sign Up
-        </Link>
-      </h1>
-    </div>
-  );
-}
+  if (sessionStatus === "loading") {
+    return <h1>Loading...</h1>;
+  }
 
-export default LoginPage;
+  return (
+    sessionStatus !== "authenticated" && (
+      <div className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="bg-[#212121] p-8 rounded shadow-md w-96">
+          <h1 className="text-4xl text-center font-semibold mb-8">Login</h1>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
+              placeholder="Email"
+              required
+            />
+            <input
+              type="password"
+              className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
+              placeholder="Password"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            >
+              {" "}
+              Sign In
+            </button>
+            <p className="text-red-600 text-[16px] mb-4">{error && error}</p>
+          </form>
+          <button
+            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+            onClick={() => {
+              signIn("github");
+            }}
+          >
+            Sign In with Github
+          </button>
+          <div className="text-center text-gray-500 mt-4">- OR -</div>
+          <Link
+            className="block text-center text-blue-500 hover:underline mt-2"
+            href="/register"
+          >
+            Register Here
+          </Link>
+        </div>
+      </div>
+    )
+  );
+};
+
+export default Login;

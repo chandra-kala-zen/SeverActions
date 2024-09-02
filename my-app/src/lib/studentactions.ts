@@ -2,6 +2,7 @@
 "use server";
 import connectDB from "../../lib/db";
 import ProfileModel from "../../lib/studentmodel/student";
+
 export async function createProfile(formData: {
 }) {
   try {

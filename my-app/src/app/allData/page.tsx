@@ -13,6 +13,7 @@ const Studentdetailserver: React.FC<Props> = ({ params }) => {
     <>
       <StudentTable />
       <div className="mt-4">
+       
       </div>
     </>
   );
