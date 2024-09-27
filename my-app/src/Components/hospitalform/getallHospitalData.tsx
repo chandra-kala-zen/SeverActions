@@ -24,6 +24,9 @@ const HospitalManagement: React.FC = () => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [editingHospital, setEditingHospital] = useState<Hospital | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<keyof Hospital | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const fetchHospitals = async () => {
@@ -55,6 +58,7 @@ const HospitalManagement: React.FC = () => {
         setEditingHospital(null);
         reset();
         setSuccessMessage("Hospital updated successfully!");
+        
       } else {
         console.error(response.error);
       }
@@ -85,8 +89,40 @@ const HospitalManagement: React.FC = () => {
     setValue('address', hospital.address);
   };
 
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSort = (field: keyof Hospital) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedHospitals = hospitals
+    .filter((hospital) =>
+      hospital.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hospital.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hospital.problem.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (!sortField) return 0;
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      return 0;
+    });
+
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+    <div className="p-6 h-100vh bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-4 text-gray-800">Hospital Management</h1>
 
       {successMessage && (
@@ -112,9 +148,11 @@ const HospitalManagement: React.FC = () => {
             >
               <Popover.Panel className="absolute z-10 mt-2 p-4 bg-white border border-gray-300 rounded-lg shadow-lg w-80">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {['name', 'age', 'gender', 'height', 'weight', 'contact', 'problem', 'address'].map(field => (
+                  {['name', 'age', 'gender', 'height', 'weight', 'contact', 'problem', 'address'].map((field) => (
                     <div key={field}>
-                      <label htmlFor={field} className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
+                      <label htmlFor={field} className="block text-sm font-medium text-gray-700 capitalize">
+                        {field}
+                      </label>
                       <input
                         id={field}
                         type={field === 'age' || field === 'height' || field === 'weight' ? 'number' : 'text'}
@@ -124,7 +162,10 @@ const HospitalManagement: React.FC = () => {
                     </div>
                   ))}
                   <div className="flex justify-end">
-                    <Button type="submit" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <Button
+                      type="submit"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
                       Update Hospital
                     </Button>
                   </div>
@@ -135,41 +176,54 @@ const HospitalManagement: React.FC = () => {
         )}
       </div>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearch}
+          placeholder="Search by name, contact, or problem"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        />
+      </div>
+
       <div>
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Hospital List</h2>
-        <div className="overflow-x-auto">
+        <div className="overflow-auto h-[500px]">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Name', 'Age', 'Gender', 'Contact', 'Actions'].map((header) => (
-                  <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {['Name', 'Age', 'Gender', 'Height', 'Weight', 'Contact', 'Problem', 'Address', 'Actions'].map((header, idx) => (
+                  <th
+                    key={header}
+                    className="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort(header.toLowerCase() as keyof Hospital)}
+                  >
                     {header}
+                    {sortField === header.toLowerCase() && (sortOrder === 'asc' ? ' 🔼' : ' 🔽')}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {hospitals.map((hospital) => (
+              {sortedHospitals.map((hospital) => (
                 <tr key={hospital._id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{hospital.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.age}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.gender}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.height}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.weight}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.contact}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
-                    <Button
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.problem}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hospital.address}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <PencilIcon
+                      className="h-5 w-5 text-blue-500 inline-block cursor-pointer"
                       onClick={() => openEditPopover(hospital)}
-                      className="text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"
-                    >
-                      <PencilIcon className="h-5 w-5" aria-hidden="true" />
-                      <span>Edit</span>
-                    </Button>
-                    <Button
+                    />
+                    <TrashIcon
+                      className="h-5 w-5 text-red-500 inline-block cursor-pointer ml-4"
                       onClick={() => handleDelete(hospital._id)}
-                      className="text-red-600 hover:text-red-800 flex items-center space-x-1"
-                    >
-                      <TrashIcon className="h-5 w-5" aria-hidden="true" />
-                      <span>Delete</span>
-                    </Button>
+                    />
                   </td>
                 </tr>
               ))}

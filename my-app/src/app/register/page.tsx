@@ -45,9 +45,10 @@ function Register() {
     };
 
     return (
-        <div>
-            <h1>Register</h1>
-            <form onSubmit={handleSubmit} className="bg-red-300 flex flex-col border-2 p-4 space-y-4">
+        <div className="w-[500px] m-auto bg-[#212121]">
+            <form onSubmit={handleSubmit} className=" flex flex-col border-2 p-4 space-y-4">
+            <h1 className="text-center font-bold">Register</h1>
+
                 <input
                     type="text"
                     name="email"
@@ -67,7 +68,7 @@ function Register() {
                 </button>
                 {error && <p className="text-red-500">{error}</p>}
                 {success && <p className="text-green-500">{success}</p>}
-                <Link href="/login">
+                <Link className="text-blue-400 hover:text-orange-400" href="/login">
                     Login into existing account
                 </Link>
             </form>

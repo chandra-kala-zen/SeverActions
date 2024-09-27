@@ -73,22 +73,24 @@ export default function HospitalForm() {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-[450px] m-auto max-w-md bg-white p-8 rounded-lg shadow-lg">
+    <div className="flex items-center justify-center  bg-gray-100 p-4">
+      <div className=" m-auto w-[90%] flex flex-col  justify-center items-center bg-white p-8 bg-blue-400 rounded-lg shadow-lg">
         <h1 className="text-2xl font-semibold mb-6 text-gray-800 text-center">Hospital Form Actions</h1>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex w-[100%] gap-[20px]">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hospital Name</FormLabel>
+                  <FormLabel> Patient Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter hospital name"
+                    
+                      placeholder="Enter patient name"
                       {...field}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2  focus:ring-indigo-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                     />
                   </FormControl>
                   <FormMessage>{errors.name?.message}</FormMessage>
@@ -114,6 +116,8 @@ export default function HospitalForm() {
                 </FormItem>
               )}
             />
+            </div>
+            <div className="flex gap-[20px]">
             <FormField
               control={form.control}
               name="gender"
@@ -123,7 +127,7 @@ export default function HospitalForm() {
                   <FormControl>
                     <select
                       {...field}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`mt-1 block w-full px-6 py-1 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
                     >
                       <option value="" disabled>Select gender</option>
                       <option value="male">Male</option>
@@ -154,6 +158,8 @@ export default function HospitalForm() {
                 </FormItem>
               )}
             />
+            </div>
+            <div className="flex gap-[20px]">
             <FormField
               control={form.control}
               name="weight"
@@ -190,6 +196,8 @@ export default function HospitalForm() {
                 </FormItem>
               )}
             />
+            </div>
+            <div className="flex gap-[20px]">
             <FormField
               control={form.control}
               name="problem"
@@ -224,12 +232,13 @@ export default function HospitalForm() {
                 </FormItem>
               )}
             />
+            </div>
             <Button type="submit" className="w-full">
               Submit
             </Button>
           </form>
         </Form>
       </div>
-    </main>
+    </div>
   );
 }

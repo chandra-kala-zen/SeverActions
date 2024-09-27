@@ -12,7 +12,7 @@ const Login = () => {
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
-      router.replace("/dashboard");
+      router.replace("/hospitaldata");
     }
   }, [sessionStatus, router]);
 
@@ -58,7 +58,7 @@ const Login = () => {
     sessionStatus !== "authenticated" && (
       <div className="flex min-h-screen flex-col items-center justify-between p-24">
         <div className="bg-[#212121] p-8 rounded shadow-md w-96">
-          <h1 className="text-4xl text-center font-semibold mb-8">Login</h1>
+          <h1 className="text-4xl text-center text-white font-semibold mb-8">Login</h1>
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -91,7 +91,7 @@ const Login = () => {
           </button>
           <div className="text-center text-gray-500 mt-4">- OR -</div>
           <Link
-            className="block text-center text-blue-500 hover:underline mt-2"
+            className="block text-center text-blue-400 hover:text-orange-400  mt-2"
             href="/register"
           >
             Register Here

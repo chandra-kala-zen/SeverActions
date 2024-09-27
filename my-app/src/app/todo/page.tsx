@@ -2,47 +2,90 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChangeEvent, FormEvent, useState } from "react";
-   
-function todo(){
-    const [list,setList] = useState<string>("");
-    const eventHandler = (e :ChangeEvent<HTMLInputElement>) =>{
-        setList(e.target.value);
-    };
+import { useState } from "react";
 
-    const [submitData,setSubitData] = useState<string[]>([]);
-    const submitDataFun = (e : FormEvent) =>{
-        e.preventDefault();
-
-        if(list.trim()){
-            setSubitData([...submitData,list]);
-            setList("")
-            console.log(submitData)
-
-        }
-    };
-    const [cancel,setCancel] = useState<string>("");
-    const cancelList = () =>{
-        setCancel("this was canceled");
-        setList("");
+function Todo(){
+  const [title,setTitle] = useState("");
+  const [items,setItems] = useState<string[]>([])
+  const [input,setInput] = useState("")                                                     // input fields for both title,items
+// title and items
+  const handleChange = () => {
+    if(!title){                                                                             // title has not set
+      if(input.length === 0 ){
+        alert("Please entire title")
+      }else{
+        setTitle(input);
+        setInput("");
+      }
+    }else{
+      if(input.trim() === ''){
+        alert(" Please enter items here")
+      }else{
+        setItems([...items,input])
+        setInput('')
+      }
     }
+  };
 
-    return(
-        <div className="w-[500px] m-auto">
-            <form className="w-[500px] flex border-2 m-auto p-4 gap-3" onClick={submitDataFun}>
-                <Input type="text" value={list} onChange={eventHandler} placeholder="Enter any list here" />
-                <Button type="submit">Submit</Button>
-                <Button onClick={cancelList} >Cancel</Button>
+  // toggle ...
+  const [selectedItems,setSelectedItems] = useState<Set<number>>(new Set())
+  const handleToggle = (i : number) =>{
+    const newSelection  =  new Set(selectedItems)
+    if(newSelection.has(i)){                                                                  //has() is a method of a Set that returns true
+      newSelection.delete(i);
+    }else{
+      newSelection.add(i)
+    }
+    setSelectedItems(newSelection)
+  }
 
-            </form>
-            {cancel  && <p className="text-red-500 font-bold">{cancel}</p>}
+ // deleting function ... 
+  const deleteFun =() => {
+    const Afterfilter = items.filter((_,index ) => !selectedItems.has(index))
+    setItems(Afterfilter); 
+    setSelectedItems(new Set())
 
-            <div className="font-bold">
-                {submitData.map((entry,index)=> (
-                    <p key={index} >{entry}</p>
-                ))}
-            </div>
+  }
+  return(
+    <div className="w-[50%] m-auto">
+        <h1 className="font-bold text-blue-600">To Do Application</h1>
+        <div className="flex flex-row gap-4">
+            <Input 
+              type="text" 
+              value={input} 
+              onChange={(e)=> setInput(e.target.value)}  
+              placeholder= {title ? "Enter items here" : "Enter title here"} 
+            />
+            <Button 
+              onClick={handleChange}>
+              {title ? "Add items" : " Set Title "} 
+            </Button>
+            <Button 
+              onClick={deleteFun}>
+              Delete
+            </Button>
         </div>
-    )
+        <div className="bg-gray-400 mt-3 rounded-[10px] ">
+            {title && <h2 className="text-red-800 font-bold p-2">Title : {title}</h2>}
+              {items.length === 0 ?(
+                <p className="p-2">Not added yet</p>
+              ):(
+              <ul className="bg-orage-400">
+                {
+                  items.map((item,index) => (
+                    <li className="p-2 gap-4" key={index}>
+                      <input 
+                        type="checkbox" 
+                        checked = {selectedItems.has(index) } 
+                        onChange={()=> handleToggle(index)} 
+                      />
+                      {item}</li>           
+                  ))
+                } 
+              </ul>
+              )}
+        </div>
+    </div>
+  )
 }
-export default todo;
+export default Todo;
